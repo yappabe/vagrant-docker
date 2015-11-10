@@ -33,6 +33,9 @@ Vagrant.configure("2") do |config|
     vb.gui = vm_gui
     vb.memory = vm_memory
     vb.cpus = vm_cpus
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
   end
 
   config.vm.network "forwarded_port", guest: 2375, host: 2375, auto_correct: true
