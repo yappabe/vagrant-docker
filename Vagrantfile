@@ -19,8 +19,8 @@ end
 
 Vagrant.configure("2") do |config|
 
-  config.vm.box = "williamyeh/debian-jessie64-docker"
-  config.vm.hostname = "vagrant-yappa"
+  config.vm.box = "ailispaw/docker-root"
+  # config.vm.hostname = "vagrant-yappa"
   config.vm.network :private_network, ip: "172.17.8.101"
   config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3']
 
