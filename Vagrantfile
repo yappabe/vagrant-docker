@@ -47,4 +47,9 @@ Vagrant.configure("2") do |config|
     d.run "tonistiigi/dnsdock",
       args: "--restart=always -v /var/run/docker.sock:/var/run/docker.sock  --name dnsdock -p 0.0.0.0:53:53/udp"
   end
+  
+  # Adjusting datetime before provisioning.
+  config.vm.provision :shell, run: "always" do |sh|
+    sh.inline = "sntp -4sSc pool.ntp.org; date"
+  end
 end
