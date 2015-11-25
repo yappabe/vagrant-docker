@@ -47,7 +47,7 @@ vagrant reload
 
 ### Add route
 
-*Do this after each reboot!*
+*Do this after each reboot! [Or automate it!](https://www.jverdeyen.be/mac/persistent-static-routes-mac-os-x/)*
 
 ```
 sudo route -n add -net 172.18.0.0  172.17.8.101
