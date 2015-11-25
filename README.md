@@ -31,20 +31,6 @@ brew install docker
 brew install dnsmasq
 ```
 
-### Vagrant up
-
-```
-git clone https://github.com/yappabe/vagrant-docker.git
-cd vagrant-docker
-vagrant up
-```
-
-An issue with port-forwarding, reload to fix this.
-
-```
-vagrant reload
-```
-
 ### Add route
 
 *Do this after each reboot! [Or automate it!](https://www.jverdeyen.be/mac/persistent-static-routes-mac-os-x/)*
@@ -63,6 +49,20 @@ Add the following line:
 
 ```
 nameserver 172.17.8.101
+```
+
+### Vagrant up
+
+```
+git clone https://github.com/yappabe/vagrant-docker.git
+cd vagrant-docker
+vagrant up
+```
+
+An issue with port-forwarding, reload to fix this.
+
+```
+vagrant reload
 ```
 
 ### Flush DNS cache
