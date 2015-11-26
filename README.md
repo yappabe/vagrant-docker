@@ -84,3 +84,7 @@ d370b4d9e575        tonistiigi/dnsdock    "/go/bin/dnsdock"        X hours ago  
 ```
 
 You can now visit `http://dnsdock.docker/services`.
+
+## Notes
+
+- May need to reboot your device at some point, I suspect it has something to do with dnsmasq
