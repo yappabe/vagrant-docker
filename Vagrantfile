@@ -43,17 +43,29 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  config.vm.provision "docker" do |d|
-    d.pull_images "tonistiigi/dnsdock"
-    d.run "tonistiigi/dnsdock",
-      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
-      restart: "always",
-      daemonize: true
-  end
-
   # Adjusting datetime before provisioning.
   config.vm.provision :shell, run: "always" do |sh|
     sh.inline = "sntp -4sSc pool.ntp.org; date"
+  end
+
+  config.vm.provision :shell do |sh|
+    sh.inline = <<-EOT
+      echo 'DOCKER_EXTRA_ARGS="--userland-proxy=false --bip=172.17.42.1/24 --dns=172.17.42.1"' >> /var/lib/docker-root/profile
+      /etc/init.d/docker restart
+    EOT
+  end
+
+  config.vm.provision :docker do |d|
+    d.run "dnsdock",
+      image: "tonistiigi/dnsdock",
+      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp"
+  end
+
+  config.vm.provision :shell do |sh|
+    sh.inline = <<-EOT
+      echo "nameserver 172.17.42.1" > /etc/resolv.conf.head
+      dhcpcd -x eth0 && dhcpcd eth0
+    EOT
   end
 
   config.vm.provision "shell", inline: "mkdir -p /home/docker/cronjobs", privileged: false
