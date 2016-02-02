@@ -43,10 +43,10 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  # config.vm.provision "docker" do |d|
-  #   d.run "tonistiigi/dnsdock",
-  #     args: "--restart=always -v /var/run/docker.sock:/var/run/docker.sock  --name dnsdock -p 0.0.0.0:53:53/udp"
-  # end
+  config.vm.provision "docker" do |d|
+    d.run "tonistiigi/dnsdock",
+      args: "--restart=always -v /var/run/docker.sock:/var/run/docker.sock  --name dnsdock -p 0.0.0.0:53:53/udp"
+  end
 
   # Adjusting datetime before provisioning.
   config.vm.provision :shell, run: "always" do |sh|
