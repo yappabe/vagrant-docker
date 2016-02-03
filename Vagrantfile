@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.box = "ailispaw/docker-root"
   config.vm.network :private_network, ip: "172.17.8.101"
-  config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3']
+  config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3,actimeo=1']
 
   config.vm.provider :virtualbox do |vb|
     vb.check_guest_additions = false
@@ -44,7 +44,21 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision "docker" do |d|
+    d.pull_images "tonistiigi/dnsdock"
     d.run "tonistiigi/dnsdock",
-      args: "--restart=always -v /var/run/docker.sock:/var/run/docker.sock  --name dnsdock -p 0.0.0.0:53:53/udp"
+      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
+      restart: "always",
+      daemonize: true
   end
+
+  # Adjusting datetime before provisioning.
+  config.vm.provision :shell, run: "always" do |sh|
+    sh.inline = "sntp -4sSc pool.ntp.org; date"
+  end
+
+  config.vm.provision "shell", inline: "mkdir -p /home/docker/cronjobs", privileged: false
+  config.vm.provision "file", source: "./cronjobs/date.sh", destination: '/home/docker/cronjobs/date.sh'
+  config.vm.provision "file", source: "./crontab", destination: '/home/docker/crontab'
+  config.vm.provision "shell", inline: "cd /home/docker/cronjobs; chmod 755 *.sh", privileged: true
+  config.vm.provision "shell", inline: "cd /home/docker; cat crontab | crontab -;  crontab -l", privileged: true
 end

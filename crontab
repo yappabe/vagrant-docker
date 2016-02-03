@@ -1,0 +1,1 @@
+0 * * * * /home/docker/cronjobs/date.sh
