@@ -44,8 +44,11 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision "docker" do |d|
+    d.pull_images "tonistiigi/dnsdock"
     d.run "tonistiigi/dnsdock",
-      args: "--restart=always -v /var/run/docker.sock:/var/run/docker.sock  --name dnsdock -p 0.0.0.0:53:53/udp"
+      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
+      restart: "always",
+      daemonize: true
   end
 
   # Adjusting datetime before provisioning.
