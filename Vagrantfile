@@ -53,7 +53,7 @@ Vagrant.configure("2") do |config|
     sh.inline = "sntp -4sSc pool.ntp.org; date"
   end
 
-  config.vm.provision "shell", inline: "mkdir -p /home/docker/cronjobs", privileged: true
+  config.vm.provision "shell", inline: "mkdir -p /home/docker/cronjobs", privileged: false
   config.vm.provision "file", source: "./cronjobs/date.sh", destination: '/home/docker/cronjobs/date.sh'
   config.vm.provision "file", source: "./crontab", destination: '/home/docker/crontab'
   config.vm.provision "shell", inline: "cd /home/docker/cronjobs; chmod 755 *.sh", privileged: true
