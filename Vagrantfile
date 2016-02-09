@@ -17,10 +17,21 @@ def vm_cpus
   $vb_cpus.nil? ? $vm_cpus : $vb_cpus
 end
 
-Vagrant.configure("2") do |config|
+# A dummy plugin for DockerRoot to set hostname and network correctly at the very first `vagrant up`
+module VagrantPlugins
+  module GuestLinux
+    class Plugin < Vagrant.plugin("2")
+      guest_capability("linux", "change_host_name") { Cap::ChangeHostName }
+      guest_capability("linux", "configure_networks") { Cap::ConfigureNetworks }
+    end
+  end
+end
 
+Vagrant.configure("2") do |config|
+  config.vm.define "vagrant-docker"
   config.vm.box = "ailispaw/docker-root"
   config.vm.network :private_network, ip: "172.17.8.101"
+  config.vm.hostname = "vagrant-docker"
   config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3,actimeo=1']
 
   config.vm.provider :virtualbox do |vb|
@@ -43,17 +54,29 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-  config.vm.provision "docker" do |d|
-    d.pull_images "tonistiigi/dnsdock"
-    d.run "tonistiigi/dnsdock",
-      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
-      restart: "always",
-      daemonize: true
-  end
-
   # Adjusting datetime before provisioning.
   config.vm.provision :shell, run: "always" do |sh|
     sh.inline = "sntp -4sSc pool.ntp.org; date"
+  end
+
+  config.vm.provision :shell do |sh|
+    sh.inline = <<-EOT
+      echo 'DOCKER_EXTRA_ARGS="--userland-proxy=false --bip=172.17.42.1/24 --dns=172.17.42.1"' >> /var/lib/docker-root/profile
+      /etc/init.d/docker restart
+    EOT
+  end
+
+  config.vm.provision :docker do |d|
+    d.run "dnsdock",
+      image: "tonistiigi/dnsdock",
+      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp"
+  end
+
+  config.vm.provision :shell do |sh|
+    sh.inline = <<-EOT
+      echo "nameserver 172.17.42.1" > /etc/resolv.conf.head
+      dhcpcd -x eth0 && dhcpcd eth0
+    EOT
   end
 
   config.vm.provision "shell", inline: "mkdir -p /home/docker/cronjobs", privileged: false
