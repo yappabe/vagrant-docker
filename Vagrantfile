@@ -38,6 +38,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.network "forwarded_port", guest: 2375, host: 2375, auto_correct: true
+  config.vm.network "forwarded_port", guest: 9000, host: 9000, auto_correct: true
 
   if Vagrant.has_plugin?("vagrant-vbguest") then
     config.vbguest.auto_update = false
@@ -47,6 +48,14 @@ Vagrant.configure("2") do |config|
     d.pull_images "tonistiigi/dnsdock"
     d.run "tonistiigi/dnsdock",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
+      restart: "always",
+      daemonize: true
+  end
+
+  config.vm.provision "docker" do |d|
+    d.pull_images "dockerui/dockerui"
+    d.run "dockerui/dockerui",
+      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 9000:9000  --privileged",
       restart: "always",
       daemonize: true
   end
