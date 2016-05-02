@@ -2,8 +2,8 @@
 Vagrant.require_version ">= 1.7.0"
 
 $vm_gui = false
-$vm_memory = 2048
-$vm_cpus = 4
+$vm_memory = 3072
+$vm_cpus = 8
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
@@ -53,8 +53,8 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provision "docker" do |d|
-    d.pull_images "dockerui/dockerui"
-    d.run "dockerui/dockerui",
+    d.pull_images "uifd/ui-for-docker"
+    d.run "uifd/ui-for-docker",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 9000:9000  --privileged",
       restart: "always",
       daemonize: true
