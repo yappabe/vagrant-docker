@@ -2,7 +2,7 @@
 Vagrant.require_version ">= 1.7.0"
 
 $vm_gui = false
-$vm_memory = 3072
+$vm_memory = 2048
 $vm_cpus = 8
 
 def vm_gui
