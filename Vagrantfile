@@ -24,6 +24,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ailispaw/barge"
   config.vm.network :private_network, ip: "172.17.8.101"
   config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3,actimeo=1']
+  config.vm.guest = :linux
 
   config.vm.provider :virtualbox do |vb|
     vb.check_guest_additions = false
@@ -46,9 +47,21 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
+    # Adjusting datetime before provisioning.
+  config.vm.provision :shell, run: "always" do |sh|
+    sh.inline = "sntp -4sSc pool.ntp.org; date"
+  end
+
+  config.vm.provision "shell", inline: "mkdir -p /home/bargee/cronjobs", privileged: false
+  config.vm.provision "file", source: "./cronjobs/date.sh", destination: '/home/bargee/cronjobs/date.sh'
+  config.vm.provision "file", source: "./crontab", destination: '/home/bargee/crontab'
+  config.vm.provision "shell", inline: "cd /home/bargee/cronjobs; chmod 755 *.sh", privileged: true
+  config.vm.provision "shell", inline: "cd /home/bargee; cat crontab | crontab -;  crontab -l", privileged: true
+  config.vm.provision "shell", inline: "/etc/init.d/docker restart #{$docker_version}", privileged: true
+
   config.vm.provision "docker" do |d|
-    d.pull_images "tonistiigi/dnsdock"
-    d.run "tonistiigi/dnsdock",
+    d.pull_images "ailispaw/dnsdock:latest"
+    d.run "ailispaw/dnsdock",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
       restart: "always",
       daemonize: true
@@ -61,16 +74,4 @@ Vagrant.configure("2") do |config|
       restart: "always",
       daemonize: true
   end
-
-  # Adjusting datetime before provisioning.
-  config.vm.provision :shell, run: "always" do |sh|
-    sh.inline = "sntp -4sSc pool.ntp.org; date"
-  end
-
-  config.vm.provision "shell", inline: "mkdir -p /home/bargee/cronjobs", privileged: false
-  config.vm.provision "file", source: "./cronjobs/date.sh", destination: '/home/bargee/cronjobs/date.sh'
-  config.vm.provision "file", source: "./crontab", destination: '/home/bargee/crontab'
-  config.vm.provision "shell", inline: "cd /home/bargee/cronjobs; chmod 755 *.sh", privileged: true
-  config.vm.provision "shell", inline: "cd /home/bargee; cat crontab | crontab -;  crontab -l", privileged: true
-  config.vm.provision "shell", inline: "/etc/init.d/docker restart #{$docker_version}", privileged: true
 end
