@@ -5,7 +5,7 @@ $vm_gui = false
 $vm_memory = 2048
 $vm_cpus = 8
 
-$docker_version = "latest"
+$docker_version = "1.11.2"
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
