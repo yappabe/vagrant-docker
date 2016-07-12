@@ -7,6 +7,7 @@ $vm_cpus = 8
 
 $docker_version = "1.11.2"
 $vm_ip_address = "172.17.8.101"
+$docker_net = "172.17.0.0"
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
@@ -57,7 +58,7 @@ Vagrant.configure("2") do |config|
     config.vbguest.auto_update = false
   end
 
-    # Adjusting datetime before provisioning.
+  # Adjusting datetime before provisioning.
   config.vm.provision :shell, run: "always" do |sh|
     sh.inline = "sntp -4sSc pool.ntp.org; date"
   end
@@ -70,7 +71,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "/etc/init.d/docker restart #{$docker_version}", privileged: true
 
   config.vm.provision "docker" do |d|
-    d.pull_images "ailispaw/dnsdock:.12.1.1-alpine"
+    d.pull_images "ailispaw/dnsdock:1.12.1.1-alpine"
     d.run "ailispaw/dnsdock",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
       restart: "always",
@@ -84,12 +85,28 @@ Vagrant.configure("2") do |config|
       restart: "always",
       daemonize: true
   end
-  
+
   config.vm.provision :shell do |sh|
     sh.inline = <<-EOT
       echo "nameserver 127.0.0.1" > /etc/resolv.conf.head
       dhcpcd -x eth0 && dhcpcd eth0
     EOT
   end
-  
+
+  if Vagrant.has_plugin?("vagrant-triggers") then
+    config.trigger.after [:up, :resume] do
+      info "Setup route to vm ip."
+      run <<-EOT
+        sh -c "sudo route -n add -net #{$docker_net} #{$vm_ip_address}"
+      EOT
+    end
+
+    config.trigger.after [:destroy, :suspend, :halt] do
+      info "Remove route to vm ip."
+      run <<-EOT
+        sh -c "sudo route -n delete -net #{$docker_net} #{$vm_ip_address}"
+      EOT
+    end
+  end
+
 end
