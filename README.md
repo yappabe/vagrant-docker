@@ -1,3 +1,5 @@
+![docker](https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2015/04/1429543497dockerimg.png)
+
 # A lightweight Docker VM
 
 ## Getting started
