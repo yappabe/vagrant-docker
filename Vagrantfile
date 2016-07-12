@@ -6,6 +6,7 @@ $vm_memory = 2048
 $vm_cpus = 8
 
 $docker_version = "1.11.2"
+$vm_ip_address = "172.17.8.101"
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
@@ -19,10 +20,20 @@ def vm_cpus
   $vb_cpus.nil? ? $vm_cpus : $vb_cpus
 end
 
+# A dummy plugin for Barge to set hostname and network correctly at the very first `vagrant up`
+module VagrantPlugins
+  module GuestLinux
+    class Plugin < Vagrant.plugin("2")
+      guest_capability("linux", "change_host_name") { Cap::ChangeHostName }
+      guest_capability("linux", "configure_networks") { Cap::ConfigureNetworks }
+    end
+  end
+end
+
 Vagrant.configure("2") do |config|
 
   config.vm.box = "ailispaw/barge"
-  config.vm.network :private_network, ip: "172.17.8.101"
+  config.vm.network :private_network, ip: "#{$vm_ip_address}"
   config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3,actimeo=1']
   config.vm.guest = :linux
 
@@ -30,7 +41,6 @@ Vagrant.configure("2") do |config|
     vb.check_guest_additions = false
     vb.functional_vboxsf     = false
     vb.customize ["modifyvm", :id, "--uart1", "0x3F8", "4"]
-    # vb.customize ["modifyvm", :id, "--uartmode1", serialFile]
     vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
     vb.gui = vm_gui
     vb.memory = vm_memory
@@ -60,7 +70,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "/etc/init.d/docker restart #{$docker_version}", privileged: true
 
   config.vm.provision "docker" do |d|
-    d.pull_images "ailispaw/dnsdock:latest"
+    d.pull_images "ailispaw/dnsdock:.12.1.1-alpine"
     d.run "ailispaw/dnsdock",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
       restart: "always",
@@ -74,4 +84,12 @@ Vagrant.configure("2") do |config|
       restart: "always",
       daemonize: true
   end
+  
+  config.vm.provision :shell do |sh|
+    sh.inline = <<-EOT
+      echo "nameserver 127.0.0.1" > /etc/resolv.conf.head
+      dhcpcd -x eth0 && dhcpcd eth0
+    EOT
+  end
+  
 end
