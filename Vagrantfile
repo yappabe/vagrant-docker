@@ -7,7 +7,7 @@ $vm_cpus = 8
 
 $docker_version = "1.11.2"
 $vm_ip_address = "172.17.8.101"
-$docker_net = "172.17.0.0"
+$docker_net = "172.18.0.0"
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
@@ -63,6 +63,8 @@ Vagrant.configure("2") do |config|
     sh.inline = "sntp -4sSc pool.ntp.org; date"
   end
 
+  config.vm.provision "file", source: "./docker", destination: '/tmp/docker'
+  config.vm.provision "shell", inline: "mv /tmp/docker /etc/default/docker", privileged: true
   config.vm.provision "shell", inline: "mkdir -p /home/bargee/cronjobs", privileged: false
   config.vm.provision "file", source: "./cronjobs/date.sh", destination: '/home/bargee/cronjobs/date.sh'
   config.vm.provision "file", source: "./crontab", destination: '/home/bargee/crontab'
