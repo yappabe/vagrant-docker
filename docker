@@ -1,0 +1,14 @@
+# DOCKER_STORAGE="overlay"
+
+# DOCKER_DIR="/var/lib/docker"
+
+# DOCKER_HOST="-H unix://"
+DOCKER_HOST="-H unix:// -H tcp://0.0.0.0:2375"
+
+DOCKER_EXTRA_ARGS="--bip 172.18.0.1/24"
+
+# DOCKER_ULIMITS=1048576
+
+# DOCKER_LOGFILE="/var/log/docker/docker.log"
+
+# DOCKER_TIMEOUT=5
