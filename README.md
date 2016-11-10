@@ -153,3 +153,7 @@ mailcatcher:
 ```
 docker-compose up -d
 ```
+
+## Troubleshoot
+
+[Troubleshoot issues](/docs/troubleshoot.md)
