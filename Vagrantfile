@@ -5,7 +5,7 @@ $vm_gui = false
 $vm_memory = 2048
 $vm_cpus = 8
 
-$docker_version = "1.11.2"
+$docker_version = "1.13.0"
 $vm_ip_address = "172.17.8.101"
 $docker_net = "172.18.0.0"
 
@@ -73,7 +73,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "/etc/init.d/docker restart #{$docker_version}", privileged: true
 
   config.vm.provision "docker" do |d|
-    d.pull_images "ailispaw/dnsdock:1.12.1.1-alpine"
+    d.pull_images "ailispaw/dnsdock:1.16.1"
     d.run "ailispaw/dnsdock",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
       restart: "always",
