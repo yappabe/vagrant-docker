@@ -74,7 +74,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "docker" do |d|
     d.pull_images "ailispaw/dnsdock:1.16.1"
-    d.run "ailispaw/dnsdock",
+    d.run "dnsdock",
+      image: "ailispaw/dnsdock:1.16.1",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
       restart: "always",
       daemonize: true
@@ -82,7 +83,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "docker" do |d|
     d.pull_images "uifd/ui-for-docker"
-    d.run "uifd/ui-for-docker",
+    d.run "ui-for-docker",
+      image: "uifd/ui-for-docker",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 9000:9000  --privileged",
       restart: "always",
       daemonize: true
