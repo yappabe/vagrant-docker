@@ -32,7 +32,7 @@ vagrant plugin install vagrant-triggers
 #### Docker
 
 ```
-brew install docker
+brew install docker docker-compose
 ```
 
 
@@ -47,6 +47,8 @@ Add the following line:
 ```
 nameserver 172.17.8.101
 ```
+
+Also add resolver files for any additional domains you might want to use (eg. docker.example.com)
 
 ### Vagrant up
 
