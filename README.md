@@ -48,7 +48,7 @@ Add the following line:
 nameserver 172.17.8.101
 ```
 
-Also add resolver files for any additional domains you might want to use (eg. docker.webfolks.be)
+Also add resolver files for any additional domains you might want to use (eg. docker.example.com)
 
 ### Vagrant up
 
