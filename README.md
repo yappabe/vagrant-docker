@@ -32,7 +32,8 @@ vagrant plugin install vagrant-triggers
 #### Docker
 
 ```
-brew install docker docker-compose
+brew install docker 
+brew install docker-compose --ignore-dependencies 
 ```
 
 
