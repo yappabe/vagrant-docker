@@ -5,7 +5,7 @@ $vm_gui = false
 $vm_memory = 2048
 $vm_cpus = 8
 
-$docker_version = "latest"
+$docker_version = "17.05.0-ce"
 $vm_ip_address = "172.17.8.101"
 $docker_net = "172.16.0.0/12"
 
