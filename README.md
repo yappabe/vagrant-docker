@@ -93,7 +93,9 @@ docker ps
 When the following line appears:
 
 ```
-d370b4d9e575        tonistiigi/dnsdock    "/go/bin/dnsdock"        X hours ago        Up X hours          0.0.0.0:53->53/udp   dnsdock
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS                    NAMES
+fd17358a9eda        ailispaw/dnsdock:1.16.4       "dnsdock"                8 days ago          Up 21 hours         0.0.0.0:53->53/udp       dnsdock
+8d8b12ec7681        portainer/portainer           "/portainer"             8 days ago          Up 21 hours         0.0.0.0:9000->9000/tcp   portainer-portainer
 ```
 
 You can now visit `http://dnsdock.docker/services`.
@@ -105,52 +107,77 @@ brew install docker-compose
 ```
 
 
-## Example docker-compose.yml for Symfony2 development in PHP 7.0.
+## Example docker-compose.yml for Symfony development in PHP 7.1.
 
 ```yml
-app:
-    image: busybox
-    volumes:
-        - .:/var/www/app
-        - /vendor
-        - /tmpfs
-    tty: true
-    mem_limit: 1000000000
+version: '3'
 
-nginx:
-    image: yappabe/nginx
-    links:
-        - php
-        - mailcatcher
-    volumes_from:
-        - app
-    environment:
-        DOCUMENT_ROOT: /var/www/app/web
-        INDEX_FILE: app_dev.php
-        PHP_FPM_SOCKET: php:9000
-        DNSDOCK_ALIAS: project.docker
+services:
+    nginx:
+        image: yappabe/nginx:1.9
+        volumes:
+            - ./docker/shared/:/shared
+            - ./:/var/www/app
+        depends_on:
+            - php
+        env_file: 'app/config/.env'
+        environment:
+            DNSDOCK_ALIAS: project.docker, admin.project.docker
 
-mysql:
-    image: yappabe/mysql
-    environment:
-        MYSQL_PASS: dev
-        MYSQL_USER: dev
-        ON_CREATE_DB: project
-        DNSDOCK_ALIAS: mysql.project.docker
+    mysql:
+        image: mariadb:10
+        env_file: 'app/config/.env'
+        environment:
+            DNSDOCK_ALIAS: mysql.project.docker
 
-php:
-    image: yappabe/php:7.0
-    working_dir: /var/www/app
-    volumes_from:
-        - app
-    links:
-        - mysql
-        - mailcatcher
+    php:
+        image: yappabe/php:7.1
+        volumes:
+            - ./docker/shared/:/shared
+            - ./:/var/www/app
+            - vendor:/vendor
+        links:
+            - mysql
+        working_dir: /var/www/app
+        env_file: 'app/config/.env'
+        environment:
+            - HISTFILE=/shared/.bash_history
+        depends_on:
+            - mysql
+            - mailcatcher
 
-mailcatcher:
-    image: yappabe/mailcatcher
-    environment:
-        DNSDOCK_ALIAS: mailcatcher.project.docker
+    mailcatcher:
+        image: yappabe/mailcatcher
+        environment:
+            DNSDOCK_ALIAS: mailcatcher.project.docker
+
+volumes:
+  mysql-data:
+  vendor:
+```
+
+And `app/config/.env`
+
+```
+APP_ENV=dev
+APP_DEBUG=1
+DOCUMENT_ROOT=/var/www/app/web
+INDEX_FILE=app_dev.php
+PHP_FPM_SOCKET=php:9000
+MYSQL_ROOT_PASSWORD=dev
+MYSQL_DATABASE=project
+MYSQL_USER=root
+MYSQL_HOST=mysql
+MYSQL_PORT=3306
+PHP_FPM_USER=root
+PHP_ERROR_REPORTING=E_ALL
+HISTFILE=/shared/.bash_history
+MAILER_TRANSPORT=smtp
+MAILER_HOST=mailcatcher
+MAILER_USER=null
+MAILER_PASSWORD=null
+MAILER_PORT=1025
+MAILER_SECURITY=null
 ```
 
 ```

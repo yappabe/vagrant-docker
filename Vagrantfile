@@ -5,9 +5,9 @@ $vm_gui = false
 $vm_memory = 2048
 $vm_cpus = 8
 
-$docker_version = "1.13.0"
+$docker_version = "17.05.0-ce"
 $vm_ip_address = "172.17.8.101"
-$docker_net = "172.18.0.0"
+$docker_net = "172.16.0.0/12"
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
@@ -73,18 +73,19 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "/etc/init.d/docker restart #{$docker_version}", privileged: true
 
   config.vm.provision "docker" do |d|
-    d.pull_images "ailispaw/dnsdock:1.16.1"
+    d.pull_images "ailispaw/dnsdock:1.16.4"
     d.run "dnsdock",
-      image: "ailispaw/dnsdock:1.16.1",
+      image: "ailispaw/dnsdock:1.16.4",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
       restart: "always",
       daemonize: true
   end
 
+  # http://portainer.io
   config.vm.provision "docker" do |d|
-    d.pull_images "uifd/ui-for-docker"
-    d.run "ui-for-docker",
-      image: "uifd/ui-for-docker",
+    d.pull_images "portainer/portainer"
+    d.run "portainer/portainer",
+      image: "portainer/portainer",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 9000:9000  --privileged",
       restart: "always",
       daemonize: true
