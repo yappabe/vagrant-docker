@@ -22,13 +22,6 @@ brew cask install vagrant
 brew cask install virtualbox
 ```
 
-#### Vagrant plugins
-
-```
-vagrant plugin install vagrant-triggers
-```
-
-
 #### Docker
 
 ```
