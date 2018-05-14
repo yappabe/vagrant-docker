@@ -5,7 +5,7 @@
 # DOCKER_HOST="-H unix://"
 DOCKER_HOST="-H unix:// -H tcp://0.0.0.0:2375"
 
-DOCKER_EXTRA_ARGS="--bip 172.18.0.1/24"
+DOCKER_EXTRA_ARGS="--bip=172.18.0.1/24 --default-address-pool scope=global,base=172.18.0.0/16,size=24"
 
 # DOCKER_ULIMITS=1048576
 
