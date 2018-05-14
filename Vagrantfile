@@ -5,9 +5,11 @@ $vm_gui = false
 $vm_memory = 2048
 $vm_cpus = 8
 
-$docker_version = "18.04.0-ce"
+$docker_version = "18.05.0-ce"
 $vm_ip_address = "172.17.8.101"
-$docker_net = "172.16.0.0/12"
+$docker_net_1 = "172.16.0.0/12"
+$docker_net_2 = "192.168.0.0/12"
+
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
@@ -99,13 +101,23 @@ Vagrant.configure("2") do |config|
   end
 
   config.trigger.after [:up, :resume] do |trigger|
-    trigger.info = "Setup route to vm ip #{$docker_net} -> #{$vm_ip_address}!"
-    trigger.run = {inline: "sudo route -n add -net #{$docker_net} #{$vm_ip_address}"}
+    trigger.info = "Setup route to vm ip!"
+    trigger.run = {inline: "sudo route -n add -net #{$docker_net_1} #{$vm_ip_address}"}
+  end
+
+   config.trigger.after [:up, :resume] do |trigger|
+    trigger.info = "Setup route to vm ip!"
+    trigger.run = {inline: "sudo route -n add -net #{$docker_net_2} #{$vm_ip_address}"}
   end
 
   config.trigger.after [:destroy, :suspend, :halt] do |trigger|
     trigger.info = "Remove route to vm ip!"
-    trigger.run = {inline: "sudo route -n delete -net #{$docker_net} #{$vm_ip_address}"}
+    trigger.run = {inline: "sudo route -n delete -net #{$docker_net_1} #{$vm_ip_address}"}
+  end
+
+  config.trigger.after [:destroy, :suspend, :halt] do |trigger|
+    trigger.info = "Remove route to vm ip!"
+    trigger.run = {inline: "sudo route -n delete -net #{$docker_net_2} #{$vm_ip_address}"}
   end
 
 end
