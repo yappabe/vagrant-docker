@@ -1,11 +1,11 @@
 
-Vagrant.require_version ">= 1.7.0"
+Vagrant.require_version ">= 2.1.0"
 
 $vm_gui = false
 $vm_memory = 2048
 $vm_cpus = 8
 
-$docker_version = "17.05.0-ce"
+$docker_version = "18.04.0-ce"
 $vm_ip_address = "172.17.8.101"
 $docker_net = "172.16.0.0/12"
 
@@ -98,20 +98,14 @@ Vagrant.configure("2") do |config|
     EOT
   end
 
-  if Vagrant.has_plugin?("vagrant-triggers") then
-    config.trigger.after [:up, :resume] do
-      info "Setup route to vm ip."
-      run <<-EOT
-        sh -c "sudo route -n add -net #{$docker_net} #{$vm_ip_address}"
-      EOT
-    end
+  config.trigger.after [:up, :resume] do |trigger|
+    trigger.info = "Setup route to vm ip #{$docker_net} -> #{$vm_ip_address}!"
+    trigger.run = {inline: "sudo route -n add -net #{$docker_net} #{$vm_ip_address}"}
+  end
 
-    config.trigger.after [:destroy, :suspend, :halt] do
-      info "Remove route to vm ip."
-      run <<-EOT
-        sh -c "sudo route -n delete -net #{$docker_net} #{$vm_ip_address}"
-      EOT
-    end
+  config.trigger.after [:destroy, :suspend, :halt] do |trigger|
+    trigger.info = "Remove route to vm ip!"
+    trigger.run = {inline: "sudo route -n delete -net #{$docker_net} #{$vm_ip_address}"}
   end
 
 end
