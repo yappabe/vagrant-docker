@@ -4,6 +4,7 @@ Vagrant.require_version ">= 2.1.0"
 $vm_gui = false
 $vm_memory = 2048
 $vm_cpus = 8
+$vm_disk = "128GB"
 
 
 $docker_version = "18.06.0-ce"
@@ -35,6 +36,7 @@ end
 Vagrant.configure("2") do |config|
 
   config.vm.box = "ailispaw/barge"
+  config.disksize.size = $vm_disk
   config.vm.network :private_network, ip: "#{$vm_ip_address}"
   config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3,actimeo=1']
   config.vm.guest = :linux

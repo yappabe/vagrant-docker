@@ -20,6 +20,7 @@
 ```
 brew cask install vagrant
 brew cask install virtualbox
+vagrant plugin install vagrant-disksize
 ```
 
 #### Docker
