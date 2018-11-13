@@ -35,6 +35,7 @@ end
 Vagrant.configure("2") do |config|
 
   config.vm.box = "ailispaw/barge"
+  config.disksize.size = "128GB"
   config.vm.network :private_network, ip: "#{$vm_ip_address}"
   config.vm.synced_folder ENV['HOME'], ENV['HOME'], id: "home", :nfs => true, :mount_options => ['noatime,soft,nolock,vers=3,udp,proto=udp,udp,rsize=8192,wsize=8192,namlen=255,timeo=10,retrans=3,nfsvers=3,actimeo=1']
   config.vm.guest = :linux
