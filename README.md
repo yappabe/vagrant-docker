@@ -50,6 +50,7 @@ Also add resolver files for any additional domains you might want to use (eg. do
 ```
 git clone https://github.com/yappabe/vagrant-docker.git
 cd vagrant-docker
+vagrant plugin install vagrant-disksize
 vagrant up
 ```
 
