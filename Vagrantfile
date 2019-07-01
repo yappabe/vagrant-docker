@@ -81,6 +81,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "mv /tmp/docker /etc/default/docker", privileged: true
   config.vm.provision "shell", inline: "mkdir -p /home/bargee/cronjobs", privileged: false
   config.vm.provision "file", source: "./cronjobs/date.sh", destination: '/home/bargee/cronjobs/date.sh'
+  config.vm.provision "file", source: "./cronjobs/dnsdock.sh", destination: '/home/bargee/cronjobs/dnsdock.sh'
   config.vm.provision "file", source: "./crontab", destination: '/home/bargee/crontab'
   config.vm.provision "shell", inline: "cd /home/bargee/cronjobs; chmod 755 *.sh", privileged: true
   config.vm.provision "shell", inline: "cd /home/bargee; cat crontab | crontab -;  crontab -l", privileged: true

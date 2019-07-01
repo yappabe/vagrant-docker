@@ -1,1 +1,2 @@
 */5 * * * * /home/bargee/cronjobs/date.sh
+*/5 * * * * /home/bargee/cronjobs/dnsdock.sh
