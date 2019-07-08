@@ -1,15 +1,25 @@
+require 'yaml'
 
 Vagrant.require_version ">= 2.1.0"
 
-$vm_gui = false
-$vm_memory = 2048
-$vm_cpus = 8
-$vm_disk = "128GB"
+# Load settings from vagrant.yml or vagrant.yml.dist
+current_dir = File.dirname(File.expand_path(__FILE__))
 
+if File.file?("#{current_dir}/vagrant.yaml")
+    config_file = YAML.load_file("#{current_dir}/vagrant.yaml")
+else
+    config_file = YAML.load_file("#{current_dir}/vagrant.yaml.dist")
+end
 
-$docker_version = "18.06.0-ce"
-$vm_ip_address = "172.17.8.101"
-$docker_net = "172.16.0.0/12"
+settings = config_file['settings']
+
+$vm_gui = settings['vm']['gui']
+$vm_memory = settings['vm']['memory']
+$vm_cpus = settings['vm']['cpus']
+$vm_disk = settings['vm']['disk']
+$vm_ip_address = settings['vm']['ip']
+$docker_version = settings['docker']['version']
+$docker_net = settings['docker']['network']
 
 def vm_gui
   $vb_gui.nil? ? $vm_gui : $vb_gui
@@ -52,6 +62,7 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
     vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
   config.vm.network "forwarded_port", guest: 2375, host: 2375, auto_correct: true
@@ -70,6 +81,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: "mv /tmp/docker /etc/default/docker", privileged: true
   config.vm.provision "shell", inline: "mkdir -p /home/bargee/cronjobs", privileged: false
   config.vm.provision "file", source: "./cronjobs/date.sh", destination: '/home/bargee/cronjobs/date.sh'
+  config.vm.provision "file", source: "./cronjobs/dnsdock.sh", destination: '/home/bargee/cronjobs/dnsdock.sh'
   config.vm.provision "file", source: "./crontab", destination: '/home/bargee/crontab'
   config.vm.provision "shell", inline: "cd /home/bargee/cronjobs; chmod 755 *.sh", privileged: true
   config.vm.provision "shell", inline: "cd /home/bargee; cat crontab | crontab -;  crontab -l", privileged: true
@@ -77,19 +89,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "docker" do |d|
     d.pull_images "ailispaw/dnsdock:1.16.4"
+    d.post_install_provision "shell", inline:"docker rm -f dnsdock || true"
     d.run "dnsdock",
       image: "ailispaw/dnsdock:1.16.4",
       args: "-v /var/run/docker.sock:/var/run/docker.sock -p 0.0.0.0:53:53/udp",
-      restart: "always",
-      daemonize: true
-  end
-
-  # http://portainer.io
-  config.vm.provision "docker" do |d|
-    d.pull_images "portainer/portainer"
-    d.run "portainer/portainer",
-      image: "portainer/portainer",
-      args: "-v /var/run/docker.sock:/var/run/docker.sock -p 9000:9000  --privileged",
       restart: "always",
       daemonize: true
   end
@@ -104,6 +107,8 @@ Vagrant.configure("2") do |config|
   config.trigger.after [:up, :resume] do |trigger|
     trigger.info = "Setup route to vm ip #{$docker_net} -> #{$vm_ip_address}!"
     trigger.run = {inline: "sudo route -n add -net #{$docker_net} #{$vm_ip_address}"}
+    trigger.info = "Update vm.max_map_count!"
+    trigger.run_remote = {inline: "sudo sysctl -w vm.max_map_count=262144"}
   end
 
   config.trigger.after [:destroy, :suspend, :halt] do |trigger|

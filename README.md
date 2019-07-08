@@ -89,7 +89,6 @@ When the following line appears:
 ```
 CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS                    NAMES
 fd17358a9eda        ailispaw/dnsdock:1.16.4       "dnsdock"                8 days ago          Up 21 hours         0.0.0.0:53->53/udp       dnsdock
-8d8b12ec7681        portainer/portainer           "/portainer"             8 days ago          Up 21 hours         0.0.0.0:9000->9000/tcp   portainer-portainer
 ```
 
 You can now visit `http://dnsdock.docker/services`.

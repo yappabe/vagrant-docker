@@ -1,0 +1,11 @@
+---
+settings:
+    vm:
+      gui: false
+      memory: 2048
+      cpus: 8
+      disk: 128GB
+      ip: 172.17.8.101
+    docker:
+      version: 18.06.0-ce
+      network: 172.16.0.0/12
